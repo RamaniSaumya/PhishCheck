@@ -5,6 +5,7 @@ import whois
 import urllib
 import urllib.request
 import requests
+import pickle
 from datetime import datetime
 
 from flask import Flask, render_template, request
@@ -239,6 +240,13 @@ def featureExtraction(url):
   return features
 
 
+def prediction(feat):
+  with open("/content/xgmodel (1).pkl", "rb") as file:
+    loaded_model = pickle.load(file)
+    
+  pred= loaded_model.predict(feat)
+  print(pred)
+
 
 @app.route('/')
 def home():
@@ -246,11 +254,21 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-   url = request.form['url']
-   features1=[]
-   features1=featureExtraction(url)
-   legi_features1 = legi_features[1:]
-   return render_template('index2.html')
+    url = request.form['url']
+    features1 = featureExtraction(url)
+    legi_features1 = features1[1:]
+
+    with open("xgmodel (1).pkl", "rb") as file:
+        loaded_model = pickle.load(file)
+
+    pred = loaded_model.predict([legi_features1])
+    print(pred)
+
+    if pred[0] == 1:
+        return f"{url} is a phishing website"
+    else:
+        return f"{url} is a legitimate website"
+
 
 if __name__ == "__main__":
     app.run(debug=True)
