@@ -136,7 +136,6 @@ def domainAge(domain_name):
   return age
 
 
-
 # 14.End time of domain: The difference between termination time and current time (Domain_End)
 def domainEnd(domain_name):
   expiration_date = domain_name.expiration_date
@@ -257,17 +256,29 @@ def predict():
     url = request.form['url']
     features1 = featureExtraction(url)
     legi_features1 = features1[1:]
-
+    print(features1)
     with open("xgmodel (1).pkl", "rb") as file:
         loaded_model = pickle.load(file)
 
     pred = loaded_model.predict([legi_features1])
     print(pred)
-
     if pred[0] == 1:
-        return f"{url} is a phishing website"
+        result_text = "This is a Phishing Website"
+        result_class = "phishing"
     else:
-        return f"{url} is a legitimate website"
+        result_text = "This is a Legitimate Website"
+        result_class = "legitimate" 
+
+    feature_names = ['Domain','Have_IP', 'Have_At', 'URL_Length', 'URL_Depth', 'Redirection',
+                 'https_Domain', 'TinyURL', 'Prefix/Suffix', 'DNS_Record',
+                 'Domain_Age', 'Domain_End', 'iFrame', 'Mouse_Over', 'Right_Click', 'Web_Forwards']
+
+    # features1 = legi_features1
+    # feat = pd.DataFrame([legi_features1], columns=feature_names)
+    feature_data = list(zip(feature_names,features1))
+
+    return render_template('index2.html', url=url, result_text=result_text, result_class=result_class, features=feature_data)
+
 
 
 if __name__ == "__main__":
